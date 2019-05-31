@@ -1,4 +1,5 @@
 use wordsearch::Dict;
+use wordsearch::Graph;
 
 fn main() {
     let mut dict = Dict::new();
@@ -6,4 +7,8 @@ fn main() {
     dict.add_word("ant");
 
     println!("{:?}", dict);
+
+    let graph = Graph::grid(2, 2);
+
+    println!("{:?}", graph);
 }
