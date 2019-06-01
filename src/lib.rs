@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::collections::BTreeSet;
 use std::iter::FromIterator;
+use std::str::FromStr;
 
 type Map<T, U> = BTreeMap<T, U>;
 type Set<T> = BTreeSet<T>;
@@ -47,7 +48,7 @@ impl<'a> FromIterator<&'a str> for Dict {
 // Graph
 
 #[derive(Debug, PartialEq)]
-pub struct Graph(AdjMap);
+struct Graph(AdjMap);
 
 type AdjMap = Map<u32, Set<u32>>;
 
@@ -63,7 +64,7 @@ fn add_edges(adj: &mut AdjMap, x: u32, y: u32) -> &AdjMap {
 }
 
 impl Graph {
-    pub fn grid(width: u32, height: u32) -> Graph {
+    fn grid(width: u32, height: u32) -> Graph {
         let mut adj = Map::new();
 
         for n in 1..(width * height) {
@@ -86,6 +87,84 @@ impl Graph {
         }
 
         Graph(adj)
+    }
+}
+
+// Board
+
+#[derive(Debug, PartialEq)]
+pub struct Board {
+    grid: Graph,
+    chars: Map<u32, char>,
+}
+
+impl FromStr for Board {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let rows: Vec<&str> = s.split_whitespace().collect();
+        let height = rows.len();
+
+        if height < 2 {
+            return Err("must have at least two rows");
+        }
+
+        let width = rows[0].len();
+
+        if !rows.iter().all(|row| row.len() == width) {
+            return Err("all rows must be the same width");
+        }
+        if width < 2 {
+            return Err("must have at least two columns");
+        }
+
+        let grid = Graph::grid(width as u32, height as u32);
+        let chars: Map<u32, char> = rows
+            .iter()
+            .flat_map(|row| row.chars())
+            .enumerate()
+            .map(|(i, c)| (i as u32, c))
+            .collect();
+
+        Ok(Board { grid, chars })
+    }
+}
+
+// test Board
+
+#[cfg(test)]
+mod test_board {
+    use super::*;
+
+    #[test]
+    fn from_str_ok() {
+        let board = "abc def ghi".parse::<Board>();
+
+        let expected = Board {
+            grid: Graph::grid(3, 3),
+            chars: vec![
+                (0, 'a'),
+                (1, 'b'),
+                (2, 'c'),
+                (3, 'd'),
+                (4, 'e'),
+                (5, 'f'),
+                (6, 'g'),
+                (7, 'h'),
+                (8, 'i'),
+            ]
+            .into_iter()
+            .collect::<Map<u32, char>>(),
+        };
+
+        assert_eq!(board, Ok(expected));
+    }
+
+    #[test]
+    fn from_str_err() {
+        assert!("a b c".parse::<Board>().is_err());
+        assert!("abc".parse::<Board>().is_err());
+        assert!("abc de fghi".parse::<Board>().is_err());
     }
 }
 

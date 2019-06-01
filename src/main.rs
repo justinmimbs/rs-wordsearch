@@ -1,5 +1,5 @@
+use wordsearch::Board;
 use wordsearch::Dict;
-use wordsearch::Graph;
 
 fn main() {
     let mut dict = Dict::new();
@@ -8,7 +8,7 @@ fn main() {
 
     println!("{:?}", dict);
 
-    let graph = Graph::grid(2, 2);
+    let board = "ab cd".parse::<Board>();
 
-    println!("{:?}", graph);
+    println!("{:?}", board);
 }
