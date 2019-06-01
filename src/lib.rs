@@ -11,23 +11,23 @@ type Set<T> = BTreeSet<T>;
 #[derive(Debug, PartialEq)]
 pub struct Dict {
     end: bool,
-    cont: Map<char, Dict>,
+    next: Map<char, Dict>,
 }
 
 impl Dict {
     pub fn new() -> Dict {
         Dict {
             end: false,
-            cont: Map::new(),
+            next: Map::new(),
         }
     }
 
     pub fn add_word(&mut self, word: &str) -> &Dict {
-        let mut current: &mut Dict = self;
+        let mut dict: &mut Dict = self;
         for c in word.chars() {
-            current = current.cont.entry(c).or_insert_with(|| Dict::new());
+            dict = dict.next.entry(c).or_insert_with(|| Dict::new());
         }
-        current.end = true;
+        dict.end = true;
         self
     }
 }
@@ -48,24 +48,22 @@ impl<'a> FromIterator<&'a str> for Dict {
 // Graph
 
 #[derive(Debug, PartialEq)]
-struct Graph(AdjMap);
-
-type AdjMap = Map<u32, Set<u32>>;
-
-fn add_edge(adj: &mut AdjMap, x: u32, y: u32) -> &AdjMap {
-    adj.entry(x).or_insert_with(|| Set::new()).insert(y);
-    adj
-}
-
-fn add_edges(adj: &mut AdjMap, x: u32, y: u32) -> &AdjMap {
-    add_edge(adj, x, y);
-    add_edge(adj, y, x);
-    adj
-}
+struct Graph(Map<u32, Set<u32>>);
 
 impl Graph {
+    fn add_directed_edge(&mut self, x: u32, y: u32) -> &Graph {
+        self.0.entry(x).or_insert_with(|| Set::new()).insert(y);
+        self
+    }
+
+    fn add_edge(&mut self, x: u32, y: u32) -> &Graph {
+        self.add_directed_edge(x, y);
+        self.add_directed_edge(y, x);
+        self
+    }
+
     fn grid(width: u32, height: u32) -> Graph {
-        let mut adj = Map::new();
+        let mut graph = Graph(Map::new());
 
         for n in 0..(width * height - 1) {
             let right = (n + 1) % width != 0;
@@ -73,20 +71,20 @@ impl Graph {
             let left = n % width != 0;
 
             if right {
-                add_edges(&mut adj, n, n + 1);
+                graph.add_edge(n, n + 1);
             }
             if right && down {
-                add_edges(&mut adj, n, n + 1 + width);
+                graph.add_edge(n, n + 1 + width);
             }
             if down {
-                add_edges(&mut adj, n, n + width);
+                graph.add_edge(n, n + width);
             }
             if down && left {
-                add_edges(&mut adj, n, n - 1 + width);
+                graph.add_edge(n, n - 1 + width);
             }
         }
 
-        Graph(adj)
+        graph
     }
 }
 
@@ -178,21 +176,23 @@ mod test_graph {
     fn grid_3x3() {
         let graph = Graph::grid(3, 3);
 
-        let expected: AdjMap = vec![
-            (0, vec![1, 3, 4].into_iter().collect()),
-            (1, vec![0, 2, 3, 4, 5].into_iter().collect()),
-            (2, vec![1, 4, 5].into_iter().collect()),
-            (3, vec![0, 1, 4, 6, 7].into_iter().collect()),
-            (4, vec![0, 1, 2, 3, 5, 6, 7, 8].into_iter().collect()),
-            (5, vec![1, 2, 4, 7, 8].into_iter().collect()),
-            (6, vec![3, 4, 7].into_iter().collect()),
-            (7, vec![3, 4, 5, 6, 8].into_iter().collect()),
-            (8, vec![4, 5, 7].into_iter().collect()),
-        ]
-        .into_iter()
-        .collect();
+        let expected = Graph(
+            vec![
+                (0, vec![1, 3, 4].into_iter().collect()),
+                (1, vec![0, 2, 3, 4, 5].into_iter().collect()),
+                (2, vec![1, 4, 5].into_iter().collect()),
+                (3, vec![0, 1, 4, 6, 7].into_iter().collect()),
+                (4, vec![0, 1, 2, 3, 5, 6, 7, 8].into_iter().collect()),
+                (5, vec![1, 2, 4, 7, 8].into_iter().collect()),
+                (6, vec![3, 4, 7].into_iter().collect()),
+                (7, vec![3, 4, 5, 6, 8].into_iter().collect()),
+                (8, vec![4, 5, 7].into_iter().collect()),
+            ]
+            .into_iter()
+            .collect(),
+        );
 
-        assert_eq!(graph, Graph(expected));
+        assert_eq!(graph, expected);
     }
 }
 
@@ -205,7 +205,7 @@ mod test_dict {
     fn make_dict(end: bool, list: Vec<(char, Dict)>) -> Dict {
         Dict {
             end,
-            cont: list.into_iter().collect(),
+            next: list.into_iter().collect(),
         }
     }
 
