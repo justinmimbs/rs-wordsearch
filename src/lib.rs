@@ -240,6 +240,20 @@ mod test_board {
 
         assert_eq!(paths, expected);
     }
+
+    #[test]
+    fn path_to_word() {
+        let board = Board {
+            grid: Graph::grid(2, 2),
+            chars: vec![(0, 'e'), (1, 'r'), (2, 'd'), (3, 'f')]
+                .into_iter()
+                .collect(),
+        };
+
+        let word = board.path_to_word(&vec![3, 1, 0, 2]);
+
+        assert_eq!(word, "fred");
+    }
 }
 
 // test Graph
