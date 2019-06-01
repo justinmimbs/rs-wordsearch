@@ -96,6 +96,55 @@ pub struct Board {
     chars: Map<u32, char>,
 }
 
+type Path = Vec<u32>;
+
+impl Board {
+    pub fn search(&self, dict: &Dict) -> Vec<Path> {
+        let path = vec![];
+        self.grid
+            .0
+            .keys()
+            .flat_map(|&pos| self.search_step(dict, &path, pos))
+            .collect()
+    }
+
+    fn search_step(&self, dict: &Dict, path: &Path, pos: u32) -> Vec<Path> {
+        match dict.next.get(self.chars.get(&pos).unwrap()) {
+            Some(dict_here) => {
+                let mut path_here = path.clone();
+                path_here.push(pos);
+
+                let mut moves = self.grid.0.get(&pos).unwrap().clone();
+                for visited in path_here.iter() {
+                    moves.remove(visited);
+                }
+
+                // TODO compare performance
+                // let moves: Vec<u32> = self
+                //     .grid
+                //     .0
+                //     .get(&pos)
+                //     .unwrap()
+                //     .iter()
+                //     .filter(|next| !path_here.contains(next))
+                //     .cloned()
+                //     .collect();
+
+                let mut results: Vec<Path> = moves
+                    .iter()
+                    .flat_map(|&next| self.search_step(&dict_here, &path_here, next))
+                    .collect();
+
+                if dict_here.end {
+                    results.push(path_here);
+                }
+                results
+            }
+            None => vec![],
+        }
+    }
+}
+
 impl FromStr for Board {
     type Err = &'static str;
 
@@ -152,7 +201,7 @@ mod test_board {
                 (8, 'i'),
             ]
             .into_iter()
-            .collect::<Map<u32, char>>(),
+            .collect(),
         };
 
         assert_eq!(board, Ok(expected));
@@ -163,6 +212,30 @@ mod test_board {
         assert!("a b c".parse::<Board>().is_err());
         assert!("abc".parse::<Board>().is_err());
         assert!("abc de fghi".parse::<Board>().is_err());
+    }
+
+    #[test]
+    fn search() {
+        let dict: Dict = [
+            "an", "and", "ant", "anti", "bad", "banana", "bat", "bot", "boy",
+        ]
+        .iter()
+        .map(|s| *s)
+        .collect();
+
+        let board = Board {
+            grid: Graph::grid(2, 2),
+            chars: vec![(0, 'b'), (1, 'a'), (2, 't'), (3, 'n')]
+                .into_iter()
+                .collect(),
+        };
+
+        let mut paths = board.search(&dict);
+        paths.sort();
+
+        let expected = vec![vec![0, 1, 2], vec![1, 3], vec![1, 3, 2]];
+
+        assert_eq!(paths, expected);
     }
 }
 

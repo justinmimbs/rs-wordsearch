@@ -2,13 +2,17 @@ use wordsearch::Board;
 use wordsearch::Dict;
 
 fn main() {
-    let mut dict = Dict::new();
-    dict.add_word("and");
-    dict.add_word("ant");
+    let dict: Dict = ["an", "and", "ant", "anti", "bad", "bat", "bot", "boy"]
+        .iter()
+        .map(|s| *s)
+        .collect();
 
     println!("{:?}", dict);
 
-    let board = "ab cd".parse::<Board>();
+    if let Ok(board) = "ba tn".parse::<Board>() {
+        println!("{:?}", board);
 
-    println!("{:?}", board);
+        let paths = board.search(&dict);
+        println!("{:?}", paths);
+    }
 }
