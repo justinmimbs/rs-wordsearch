@@ -1,18 +1,14 @@
-use wordsearch::Board;
-use wordsearch::Dict;
+mod dictionary;
+
+use wordsearch::{Board, Dict};
 
 fn main() {
-    let dict: Dict = ["an", "and", "ant", "anti", "bad", "bat", "bot", "boy"]
-        .iter()
-        .map(|s| *s)
-        .collect();
+    let dict: Dict = dictionary::WORDS.iter().map(|s| *s).collect();
 
-    println!("{:?}", dict);
-
-    if let Ok(board) = "ba tn".parse::<Board>() {
-        println!("{:?}", board);
-
+    if let Ok(board) = "blu mar ten".parse::<Board>() {
         let paths = board.search(&dict);
-        println!("{:?}", paths);
+        let words: Vec<String> = paths.iter().map(|path| board.path_to_word(path)).collect();
+
+        println!("{:?}", words);
     }
 }

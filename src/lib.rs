@@ -1,10 +1,7 @@
-use std::collections::BTreeMap;
-use std::collections::BTreeSet;
+use std::collections::BTreeMap as Map;
+use std::collections::BTreeSet as Set;
 use std::iter::FromIterator;
 use std::str::FromStr;
-
-type Map<T, U> = BTreeMap<T, U>;
-type Set<T> = BTreeSet<T>;
 
 // Dict
 
@@ -96,7 +93,7 @@ pub struct Board {
     chars: Map<u32, char>,
 }
 
-type Path = Vec<u32>;
+pub type Path = Vec<u32>;
 
 impl Board {
     pub fn search(&self, dict: &Dict) -> Vec<Path> {
@@ -142,6 +139,12 @@ impl Board {
             }
             None => vec![],
         }
+    }
+
+    pub fn path_to_word(&self, path: &Path) -> String {
+        path.iter()
+            .map(|pos| self.chars.get(pos).unwrap_or(&'?'))
+            .collect()
     }
 }
 
