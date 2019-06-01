@@ -111,24 +111,18 @@ impl Board {
                 let mut path_here = path.clone();
                 path_here.push(pos);
 
-                let mut moves = self.grid.0.get(&pos).unwrap().clone();
-                for visited in path_here.iter() {
-                    moves.remove(visited);
-                }
-
-                // TODO compare performance
-                // let moves: Vec<u32> = self
-                //     .grid
-                //     .0
-                //     .get(&pos)
-                //     .unwrap()
+                // let mut moves = self.grid.0.get(&pos).unwrap().clone();
+                // for visited in path_here.iter() {
+                //     moves.remove(visited);
+                // }
+                // let mut results: Vec<Path> = moves
                 //     .iter()
-                //     .filter(|next| !path_here.contains(next))
-                //     .cloned()
+                //     .flat_map(|&next| self.search_step(&dict_here, &path_here, next))
                 //     .collect();
 
-                let mut results: Vec<Path> = moves
+                let mut results: Vec<Path> = (self.grid.0.get(&pos).unwrap())
                     .iter()
+                    .filter(|next| !path_here.contains(next))
                     .flat_map(|&next| self.search_step(&dict_here, &path_here, next))
                     .collect();
 
