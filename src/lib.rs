@@ -67,10 +67,10 @@ impl Graph {
     fn grid(width: u32, height: u32) -> Graph {
         let mut adj = Map::new();
 
-        for n in 1..(width * height) {
-            let right = n % width != 0;
-            let down = ((n - 1) / width) + 1 < height;
-            let left = (n - 1) % width != 0;
+        for n in 0..(width * height - 1) {
+            let right = (n + 1) % width != 0;
+            let down = (n / width) + 1 < height;
+            let left = n % width != 0;
 
             if right {
                 add_edges(&mut adj, n, n + 1);
@@ -179,15 +179,15 @@ mod test_graph {
         let graph = Graph::grid(3, 3);
 
         let expected: AdjMap = vec![
-            (1, vec![2, 4, 5].into_iter().collect()),
-            (2, vec![1, 3, 4, 5, 6].into_iter().collect()),
-            (3, vec![2, 5, 6].into_iter().collect()),
-            (4, vec![1, 2, 5, 7, 8].into_iter().collect()),
-            (5, vec![1, 2, 3, 4, 6, 7, 8, 9].into_iter().collect()),
-            (6, vec![2, 3, 5, 8, 9].into_iter().collect()),
-            (7, vec![4, 5, 8].into_iter().collect()),
-            (8, vec![4, 5, 6, 7, 9].into_iter().collect()),
-            (9, vec![5, 6, 8].into_iter().collect()),
+            (0, vec![1, 3, 4].into_iter().collect()),
+            (1, vec![0, 2, 3, 4, 5].into_iter().collect()),
+            (2, vec![1, 4, 5].into_iter().collect()),
+            (3, vec![0, 1, 4, 6, 7].into_iter().collect()),
+            (4, vec![0, 1, 2, 3, 5, 6, 7, 8].into_iter().collect()),
+            (5, vec![1, 2, 4, 7, 8].into_iter().collect()),
+            (6, vec![3, 4, 7].into_iter().collect()),
+            (7, vec![3, 4, 5, 6, 8].into_iter().collect()),
+            (8, vec![4, 5, 7].into_iter().collect()),
         ]
         .into_iter()
         .collect();
